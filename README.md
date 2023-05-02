@@ -1,3 +1,5 @@
+_Note: for the reproducibility of the fairness analysis, check out the final section of this readme_
+
 # RHF: ResNet50-HDC-FPN-FasterRCNN-CMFD-LCMFD
 
 [简体中文](https://github.com/shiningxy/RHF/blob/master/README_zh.md) | [English](https://github.com/shiningxy/RHF)
@@ -93,3 +95,15 @@ Use code, data, weights, etc... Please cite 💝
   If the GPU memory is not enough (if the batch_size is less than 8), it is recommended to use the default norm_layer in the create_model function.
 * When using the prediction script, set 'train_weights' to your own generated weight path.
 * When using the validation file, take care to make sure that your validation set or test set must contain targets for each class, and use it with only '--num-classes', '--data-path' and '--weights', and leave the rest of the code unchanged as much as possible
+
+
+# Reproducibility of the fairness analysis
+Follow these steps:
+
+1. Set up this repo as indicated in the "Environment configuration" section
+2. Generate the predicted bounding boxes for a dataset:
+   ```python predict.py --images_folder path/to/images --output_folder path/to/predictions```.
+   Optionally, you may specify different weights for the model using the `--weights_path` argument.
+   The script `predict.py` evaluates all of the images in the folder and produces an output in `.txt` format which includes the file name (without extension), the predicted class, the confidence score of the prediction, and the coordinates of the bounding box in pixels.
+3. Produce a `.csv` of the predictions with the normalized coordinates (0 to 1 relative to the image size): ```python adjust_output.py --input path/to/txt_output --output path/to/csv_output --normalize_predictions --dataset_folder path/to/images```. The dataset folder needs to be specify in order to recover the size of the images.
+4. Match results with ground truth: ```python match_results_*.py --predictions path/to/csv_predictions --ground_truth path/to/ground_truth --output path/to/output_file```. This will produce a number of csv files, one per protected attribute and metric, containing the rate attained by the model for each termination of the protected attribute, the p-value of the binomial test, and the Cohen's h for the difference.
