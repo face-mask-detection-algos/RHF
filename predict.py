@@ -23,6 +23,8 @@ def get_args():
     parser.add_argument("--camera_id", type=int, default=0, help="if --from_webcam active, specifies camera id (default 0)")
     parser.add_argument("--images_folder", type=str, default=r"./test_images", help="path to images (whole folder - default ./test_images)")
     parser.add_argument("--output_folder", type=str, default=None, help="folder where images will be saved (default None). If not saved, images will be shown in a window")
+    parser.add_argument("--save_images", action="store_true", default=False, help="Save images with bounding boxes in --output_folder (default False).")
+    
     args = parser.parse_args()
     return args
 
@@ -152,7 +154,13 @@ def main():
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         else:
-            original_img.save(os.path.join(args.output_folder, img_name + ".jpg"))    
+            if args.save_images:
+                original_img.save(os.path.join(args.output_folder, img_name + ".jpg"))
+            
+            with open(os.path.join(args.output_folder, "output.txt"), "a") as f:
+                for box, cls, score in zip(predict_boxes, predict_classes, predict_scores):
+                    f.write(f"{img_name},{cls},{score},{box[0]},{box[1]},{box[2]},{box[3]}\n")
+
         img_id += 1
         
 
